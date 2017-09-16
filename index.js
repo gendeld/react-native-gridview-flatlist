@@ -12,34 +12,33 @@ import {
 var CollectionView = React.createClass({
   groupItems: function (items, itemsPerRow) {
     var itemsGroups = [];
-        var group = [];
-        var flag=false;
-        items.forEach(function(item) {
-          if(flag)
-          {
-            if (group.length === itemsPerRow) {
-              itemsGroups.push(group);
-              group = [item];
-            } else {
-              group.push(item);
-            }
-          }
-          else {
-            flag=true;
-          }
-        });
-        if (group.length > 0) {
+    var group = [];
+    var flag=false;
+    items.forEach(function(item) {
+      if(flag)
+      {
+        if (group.length === itemsPerRow) {
           itemsGroups.push(group);
+          group = [item];
+        } else {
+          group.push(item);
         }
-        itemsGroups.unshift([items[0]]);
-        return itemsGroups;
+      }
+      else {
+        flag=true;
+      }
+    });
+    if (group.length > 0) {
+      itemsGroups.push(group);
+    }
+    itemsGroups.unshift([items[0]]);
+    return itemsGroups;
   },
-  renderGroup: function ({ item }) {
+  renderGroup: function ({ item, index }) {
     var that = this;
-    if(item.length==1&&this.state.flag)
+    if(index==0)
     {
-      this.state.flag=false;
-      var items = item.map(function (obj, index) {
+      var items = item.map(function (obj) {
         return that.props.renderHeader(obj, that.props.openModal, that.props.mCon);
       });
       return (
@@ -54,8 +53,8 @@ var CollectionView = React.createClass({
       );
     }
     else {
-      var items = item.map(function (obj, index) {
-        return that.props.renderItem(obj, that.props.openModal, index, that.props.mCon);
+      var items = item.map(function (obj, a) {
+        return that.props.renderItem(obj, that.props.openModal, a, that.props.mCon);
       });
       items = items.map((obj, i) => {
         return (
@@ -91,8 +90,12 @@ var CollectionView = React.createClass({
     }
 
   },
+
+  shouldComponentUpdate: function (nextProps, nextState) {
+     return JSON.stringify(nextProps.items) !== JSON.stringify(this.props.items);
+  },
+
   render: function () {
-    this.state={flag: true};
     var groups = this.groupItems(this.props.items, this.props.itemsPerRow);
     return (<FlatList
       data={groups}
